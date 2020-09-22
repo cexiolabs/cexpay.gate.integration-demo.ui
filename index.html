@@ -110,21 +110,22 @@
 		}
 
 		async function getPaymentURL(currency, amount) {
-			const currentHost = window.location.origin;
-			const response = await fetch(`${currentHost}/api`, {
+			let webAppLocation = window.location.toString();
+			if (!webAppLocation.endsWith('/')) { webAppLocation += '/'; }
+			const fetchResponse = await fetch(`${webAppLocation}api`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ currency, amount }),
 			});
 
-			const json = await response.json();
+			if (fetchResponse.ok !== true) {
+				throw new Error(`${fetchResponse.status} ${fetchResponse.statusText}`);
+			}
+
+			const json = await fetchResponse.json();
 
 			if (json.error) {
 				throw new Error(json.error);
-			}
-
-			if (response.ok !== true) {
-				throw new Error(`${response.status} ${response.statusText}`);
 			}
 
 			return json;
