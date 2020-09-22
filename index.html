@@ -104,7 +104,7 @@
 				const { paymentURL } = await getPaymentURL(currency, amount);
 				window.open(paymentURL);
 			} catch (e) {
-				alert('Cannot open payment widget. Underlaying error: ' + e.message);
+				alert('Cannot open payment widget. ' + e.message);
 				console.error(e);
 			}
 		}
