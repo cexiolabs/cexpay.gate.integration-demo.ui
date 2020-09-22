@@ -116,8 +116,18 @@
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ currency, amount }),
 			});
-			if (response.ok !== true) { throw new Error(`${response.status} ${response.statusText}`); }
-			return await response.json();
+
+			const json = await response.json();
+
+			if (json.error) {
+				throw new Error(json.error);
+			}
+
+			if (response.ok !== true) {
+				throw new Error(`${response.status} ${response.statusText}`);
+			}
+
+			return json;
 		}
 	</script>
 	<!--End Cryptopay widget handler-->
