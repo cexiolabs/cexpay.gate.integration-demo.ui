@@ -116,7 +116,12 @@
 					amount,
 				}),
 			});
-			return await response.json();
+			const json = await response.json();
+			
+			if (json.error) {
+				throw new Error(json.error);
+			}
+			return json;
 		}
 	</script>
 	<!--End Cryptopay widget handler-->
