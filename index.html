@@ -46,11 +46,12 @@
 				<div class="item">
 					<img data-src="images/slider/slider1.jpg" alt="Second slide" src="./assets/slider1.jpg">
 				</div>
-				<div class="item active"> <img data-src="images/slider/slider2.jpg" alt="Third slide" src="./assets/slider2.jpg">
+				<div class="item active"> <img data-src="images/slider/slider2.jpg" alt="Third slide"
+						src="./assets/slider2.jpg">
 				</div>
 			</div>
 			<div class="form-container">
-				<h1 class="page_title" >Make deposit</h1>
+				<h1 class="page_title">Make deposit</h1>
 				<div class="form-wrapper">
 					<a id="make-eur-deposit" class="btn btn-default btn-lg">EUR deposit</a>
 					<select class="custom-select" id="deposit-amount">
@@ -59,6 +60,8 @@
 						<option class="custom-select-options" value="25">25</option>
 						<option class="custom-select-options" value="50">50</option>
 						<option class="custom-select-options" value="100">100</option>
+						<option class="custom-select-options" value="200">200</option>
+						<option class="custom-select-options" value="500">500</option>
 					</select>
 					<a id="make-usd-deposit" class="btn btn-default btn-lg">USD deposit</a>
 				</div>
@@ -75,7 +78,8 @@
 		</div>
 	</section>
 	<section class="main__middle__container">
-		<p class="text-center copyright">&copy; Copyright Cryptopay. All Rights Reserved.</p></section>
+		<p class="text-center copyright">&copy; Copyright Cryptopay. All Rights Reserved.</p>
+	</section>
 	</section>
 	<script type="text/javascript" src="./assets/jquery.min.js"></script>
 	<script src="./assets/bootstrap.min.js"></script>
@@ -92,33 +96,31 @@
 		const makeEURDepositButton = document.querySelector('#make-eur-deposit');
 		const depositAmountSelect = document.querySelector('#deposit-amount');
 
-		makeUSDDepositButton.addEventListener('click', async () => {
-			const amount = depositAmountSelect.value;
-			const { paymentURL } = await getPaymentURL('USD', amount);
-			window.open(paymentURL);
-		});
+		makeUSDDepositButton.addEventListener('click', async () => onPayButtonClick('USD', depositAmountSelect.value));
+		makeEURDepositButton.addEventListener('click', async () => onPayButtonClick('EUR', depositAmountSelect.value));
 
-		makeEURDepositButton.addEventListener('click', async () => {
-			const amount = depositAmountSelect.value;
-			const { paymentURL } = await getPaymentURL('EUR', amount);
-			window.open(paymentURL);
-		});
-		
+		async function onPayButtonClick(currency, amount) {
+			try {
+				const { paymentURL } = await getPaymentURL(currency, amount);
+				window.open(paymentURL);
+			} catch (e) {
+				alert('Cannot open payment widget. Underlaying error: ' + e.message);
+				console.error(e);
+			}
+		}
+
 		async function getPaymentURL(currency, amount) {
 			const currentHost = window.location.origin;
 			const response = await fetch(`${currentHost}/api`, {
 				method: 'POST',
-				headers: {
-      				'Content-Type': 'application/json'
-    			},
-				body: JSON.stringify({
-					currency,
-					amount,
-				}),
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ currency, amount }),
 			});
+			if (response.ok !== true) { throw new Error(`${response.status} ${response.statusText}`); }
 			return await response.json();
 		}
 	</script>
 	<!--End Cryptopay widget handler-->
 </body>
+
 </html>
