@@ -95,14 +95,26 @@
 		const makeUSDDepositButton = document.querySelector('#make-usd-deposit');
 		const makeEURDepositButton = document.querySelector('#make-eur-deposit');
 		const depositAmountSelect = document.querySelector('#deposit-amount');
+		const widgetIframeId = 'cryptopay-widget';
 
-		makeUSDDepositButton.addEventListener('click', async () => onPayButtonClick('USD', depositAmountSelect.value));
+		window.addEventListener('message', (event) => widgetMessageHandler(event.data));
+		makeUSDDepositButton.addEventListener('click', () => onPayButtonClickWidget('USD', depositAmountSelect.value));
 		makeEURDepositButton.addEventListener('click', async () => onPayButtonClick('EUR', depositAmountSelect.value));
 
 		async function onPayButtonClick(currency, amount) {
 			try {
 				const { paymentURL } = await getPaymentURL(currency, amount);
 				window.open(paymentURL);
+			} catch (e) {
+				alert('Cannot open payment widget. ' + e.message);
+				console.error(e);
+			}
+		}
+
+		async function onPayButtonClickWidget(currency, amount) {
+			try {
+				const { paymentURL } = await getPaymentURL(currency, amount);
+				showWidget(paymentURL);
 			} catch (e) {
 				alert('Cannot open payment widget. ' + e.message);
 				console.error(e);
@@ -129,6 +141,39 @@
 			}
 
 			return json;
+		}
+
+		function widgetMessageHandler(data) {
+			if (data.type === 'HIDE') {
+				hideWidget();
+			}
+		}
+
+		function showWidget(paymentURL) {
+			let iframe = window.document.getElementById(widgetIframeId);
+			if (!iframe) {
+				iframe = document.createElement('iframe');
+				iframe.id = widgetIframeId;
+				iframe.style.zIndex = '999999';
+				iframe.style.width = '100vw';
+				iframe.style.height = '100vh';
+				iframe.style.position = 'fixed';
+				iframe.style.display = 'block';
+				iframe.style.top = 0;
+				iframe.style.left = 0;
+				iframe.frameBorder = "0"  
+				window.document.body.appendChild(iframe);
+			}
+			document.body.style.overflow = 'hidden';
+			iframe.src = paymentURL;
+		}
+
+		function hideWidget() {
+			const settedIfreme = window.document.getElementById(widgetIframeId)
+			if (settedIfreme) {
+				settedIfreme.remove();
+				document.body.style.overflow = 'auto';
+			}
 		}
 	</script>
 	<!--End Cryptopay widget handler-->
