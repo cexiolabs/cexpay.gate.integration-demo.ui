@@ -3,15 +3,26 @@
 
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-	<title>Cryptopay demon service</title>
+	<title>CryptoPay Demo</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link href="./assets/bootstrap.min.css" rel="stylesheet">
 	<link href="./assets/main.css" rel="stylesheet" type="text/css">
 	<link href="./assets/style.css" rel="stylesheet">
+	<style>
+		.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}
+	</style>
 </head>
 
 <body>
 	<header class="main__header">
+		<a href="https://github.com/cexiolabs/cryptopay.demo.service" class="github-corner" aria-label="View source on GitHub">
+			<svg width="80" height="80" viewBox="0 0 250 250" style="fill:#FD6C6C; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true">
+				<path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+				<path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+				<path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path>
+			</svg>
+		</a>
+	
 		<div class="container">
 			<nav class="navbar navbar-default" role="navigation">
 				<div class="menuBar">
@@ -53,7 +64,6 @@
 			<div class="form-container">
 				<h1 class="page_title">Make deposit</h1>
 				<div class="form-wrapper">
-					<a id="make-eur-deposit" class="btn btn-default btn-lg">EUR deposit</a>
 					<select class="custom-select" id="deposit-amount">
 						<option class="custom-select-options" value="5">5</option>
 						<option class="custom-select-options" value="10">10</option>
@@ -63,7 +73,10 @@
 						<option class="custom-select-options" value="200">200</option>
 						<option class="custom-select-options" value="500">500</option>
 					</select>
-					<a id="make-usd-deposit" class="btn btn-default btn-lg">USD deposit</a>
+					<a class="btn btn-default btn-lg" onclick="openPaymentPage('EUR')">EUR page</a>
+					<a class="btn btn-default btn-lg" onclick="openPaymentFrame('EUR')">EUR iframe</a>
+					<a class="btn btn-default btn-lg" onclick="openPaymentPage('USD')">USD page</a>
+					<a class="btn btn-default btn-lg" onclick="openPaymentFrame('USD')">USD iframe</a>
 				</div>
 			</div>
 		</div>
@@ -71,15 +84,14 @@
 	<section class="main__middle__container homepage">
 		<div class="row headings text-center no-margin nothing">
 			<div class="container">
-				<h1 class="page_title">Cryptopay demo service</h1>
+				<h1 class="page_title">CryptoPay Demo</h1>
 				<p>Some information about service capabilities.</p>
 				<p><a class="btn btn-default btn-lg" href="http://google.com" role="button">Tell me more</a></p>
 			</div>
 		</div>
 	</section>
 	<section class="main__middle__container">
-		<p class="text-center copyright">&copy; Copyright Cryptopay. All Rights Reserved.</p>
-	</section>
+		<p class="text-center copyright">&copy; Copyright CryptoPay. All Rights Reserved.</p>
 	</section>
 	<script type="text/javascript" src="./assets/jquery.min.js"></script>
 	<script src="./assets/bootstrap.min.js"></script>
@@ -90,20 +102,16 @@
 		});
 	</script>
 
-	<!--Start Cryptopay widget handler-->
+	<!--Start CryptoPay widget handler-->
 	<script type="text/javascript">
-		const makeUSDDepositButton = document.querySelector('#make-usd-deposit');
-		const makeEURDepositButton = document.querySelector('#make-eur-deposit');
-		const depositAmountSelect = document.querySelector('#deposit-amount');
 		const widgetIframeId = 'cryptopay-widget';
 
 		window.addEventListener('message', (event) => widgetMessageHandler(event.data));
-		makeUSDDepositButton.addEventListener('click', () => onPayButtonClickWidget('USD', depositAmountSelect.value));
-		makeEURDepositButton.addEventListener('click', async () => onPayButtonClick('EUR', depositAmountSelect.value));
 
-		async function onPayButtonClick(currency, amount) {
+		async function openPaymentPage(currency) {
 			try {
-				const { paymentURL } = await getPaymentURL(currency, amount);
+				const amountStr = document.querySelector('#deposit-amount').value;
+				const { paymentURL } = await getPaymentURL(currency, amountStr);
 				window.open(paymentURL);
 			} catch (e) {
 				alert('Cannot open payment widget. ' + e.message);
@@ -111,9 +119,10 @@
 			}
 		}
 
-		async function onPayButtonClickWidget(currency, amount) {
+		async function openPaymentFrame(currency) {
 			try {
-				const { paymentURL } = await getPaymentURL(currency, amount);
+				const amountStr = document.querySelector('#deposit-amount').value;
+				const { paymentURL } = await getPaymentURL(currency, amountStr);
 				showWidget(paymentURL);
 			} catch (e) {
 				alert('Cannot open payment widget. ' + e.message);
@@ -161,7 +170,7 @@
 				iframe.style.display = 'block';
 				iframe.style.top = 0;
 				iframe.style.left = 0;
-				iframe.frameBorder = "0"  
+				iframe.frameBorder = "0"
 				window.document.body.appendChild(iframe);
 			}
 			document.body.style.overflow = 'hidden';
