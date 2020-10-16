@@ -130,13 +130,78 @@
         </footer>
     </div>
 
-    <!-- JS, Popper.js, and jQuery -->
-    <script src="../assets/jquery-3.5.1.slim.min.js"></script>
-    <script src="../assets/bootstrap.min.js"></script>
+	<!-- Libs -->
+	<script src="../assets/jquery-3.5.1.slim.min.js"></script>
+	<script src="../assets/bootstrap.min.js"></script>
 
-    <!--Start CryptoPay widget handler-->
-    <script type="text/javascript" src="../assets/widget.js"></script>
-    <!--End Cryptopay widget handler-->
+	<!-- Loading widget script -->
+	<script src="https://gate.cryptopay.band/widget.js"></script>
+
+	<script type="text/javascript">
+
+		const widgetBaseUrl = "https://gate.cryptopay.band";
+		const gatewayId = "";
+
+		// Creating widget entity and bounding handlers
+		const widget = window.CryptoPay.createWidget(gatewayId, { onEnter, onLeave });
+
+		// Called after widget displayed
+		function onEnter(data) {
+			console.log("Showing widget for order '" + data.orderId + "'.");
+		}
+
+		// Called after widget closed
+		// Property data.wasConfirmed can be used to findout if payment addres was shown to user.
+		// NOTE: You should check actual status of order using GET /v2/gate/{{gatewayId}}/order/{{orderId}} api.
+		function onLeave(data) {
+			console.log("Closing widget for order '" + data.orderId + "', order was" + (data.wasConfirmed ? "" : "n't") + " confirmed.");
+		}
+
+		async function createOrder(currency, amount) {
+			const fetchResponse = await fetch(`/api`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ currency, amount }),
+			});
+
+			if (fetchResponse.ok !== true) {
+				throw new Error(`${fetchResponse.status} ${fetchResponse.statusText}`);
+			}
+
+			const data = await fetchResponse.json();
+
+			if (data.error) {
+				throw new Error(json.error);
+			}
+
+			return data;
+		}
+
+		async function openPaymentPage(currency, amount) {
+			try {
+				const amountStr = amount ? amount : document.querySelector('#deposit-amount').value;
+				const { orderId } = await createOrder(currency, amountStr);
+				const url = `${widgetBaseUrl}/${gatewayId}/${orderId}`;
+				window.open(url);
+			} catch (e) {
+				alert('Cannot open payment widget. ' + e.message);
+				console.error(e);
+			}
+		}
+
+		async function openPaymentFrame(currency, amount) {
+			try {
+				const amountStr = amount ? amount : document.querySelector('#deposit-amount').value;
+				const { orderId } = await createOrder(currency, amountStr);
+				widget.show(orderId);
+			} catch (e) {
+				alert('Cannot open payment widget. ' + e.message);
+				console.error(e);
+			}
+		}
+
+	</script>
+
 </body>
 
 </html>
