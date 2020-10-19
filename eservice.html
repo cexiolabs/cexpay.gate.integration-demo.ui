@@ -158,7 +158,9 @@
 		}
 
 		async function createOrder(currency, amount) {
-			const fetchResponse = await fetch(`/api`, {
+			let webAppLocation = window.location.toString();
+			webAppLocation = webAppLocation.endsWith('/') ? webAppLocation : webAppLocation + "/";
+            const fetchResponse = await fetch(`${webAppLocation}api`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ currency, amount }),
