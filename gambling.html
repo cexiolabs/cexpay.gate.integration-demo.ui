@@ -83,6 +83,7 @@
 
 		const widgetBaseUrl = "https://gate.cryptopay.band";
 		const gatewayId = "";
+		const apiUrl = resolveApiUrl();
 
 		// Creating widget entity and bounding handlers
 		const widget = window.CryptoPay.createWidget(gatewayId, { onEnter, onLeave });
@@ -99,10 +100,18 @@
 			console.log("Closing widget for order '" + data.orderId + "', order was" + (data.wasConfirmed ? "" : "n't") + " confirmed.");
 		}
 
+		function resolveApiUrl() {
+			const url = new URL(window.location.toString());
+			const parts = url.pathname.split("/");
+			parts.splice(-1, 1);
+			parts.push("api");
+			url.pathname = parts.join("/");
+			return url.toString();
+		}
+
 		async function createOrder(currency, amount) {
-			let webAppLocation = window.location.toString();
-			webAppLocation = webAppLocation.endsWith('/') ? webAppLocation : webAppLocation + "/";
-            const fetchResponse = await fetch(`${webAppLocation}api`, {
+
+			const fetchResponse = await fetch(apiUrl, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ currency, amount }),
