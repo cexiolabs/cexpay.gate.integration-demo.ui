@@ -120,24 +120,27 @@
 	<script src="https://gate.cryptopay.band/widget.js"></script>
 
 	<script type="text/javascript">
-
-		const widgetBaseUrl = "https://gate.cryptopay.band";
+		const widgetUrl = "https://gate.cryptopay.band";
 		const gatewayId = "";
 		const apiUrl = resolveApiUrl();
 
-		// Creating widget entity and bounding handlers
-		const widget = window.CryptoPay.createWidget(gatewayId, { onEnter, onLeave });
+		if(gatewayId === "") {
+			alert("Error! Please setup your gatewayId.");
+			throw new Error("Cannot continue");
+		}
 
 		// Called after widget displayed
 		function onEnter(data) {
-			console.log("Showing widget for order '" + data.orderId + "'.");
+			const { orderId } = data;
+			console.log("Showing widget for order '" + orderId + "'.");
 		}
 
 		// Called after widget closed
 		// Property data.wasConfirmed can be used to findout if payment addres was shown to user.
 		// NOTE: You should check actual status of order using GET /v2/gate/{{gatewayId}}/order/{{orderId}} api.
 		function onLeave(data) {
-			console.log("Closing widget for order '" + data.orderId + "', order was" + (data.wasConfirmed ? "" : "n't") + " confirmed.");
+			const { orderId, wasConfirmed } = data;
+			console.log("Closing widget for order '" + orderId + "', order was" + (wasConfirmed ? "" : "n't") + " confirmed.");
 		}
 
 		function resolveApiUrl() {
@@ -174,8 +177,10 @@
 			try {
 				const amountStr = amount ? amount : document.querySelector('#deposit-amount').value;
 				const { orderId } = await createOrder(currency, amountStr);
-				const url = `${widgetBaseUrl}/${gatewayId}/${orderId}`;
-				window.open(url);
+				let targetUrl = widgetUrl;
+				if(!targetUrl.endsWith('/')) { targetUrl += '/'; }
+				const paymentPageUrl = targetUrl + encodeURI(`${gatewayId}/${orderId}`);
+				window.open(paymentPageUrl);
 			} catch (e) {
 				alert('Cannot open payment widget. ' + e.message);
 				console.error(e);
@@ -193,7 +198,10 @@
 			}
 		}
 
+		// Creating widget entity and bounding handlers
+		const widget = window.CryptoPay.createWidget(gatewayId, { onEnter, onLeave });
 	</script>
+
 </body>
 
 </html>
