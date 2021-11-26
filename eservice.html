@@ -6,7 +6,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
 
-	<title>CryptoPay Demo</title>
+	<title>CEX Pay Demo</title>
 
 	<link rel="stylesheet" href="./assets/bootstrap.min.css">
 
@@ -37,7 +37,7 @@
 		</svg>
 	</a>
 	<div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm">
-		<h5 class="my-0 mr-md-auto font-weight-normal">CryptoPay Demo</h5>
+		<h5 class="my-0 mr-md-auto font-weight-normal">CEX Pay Demo</h5>
 		<nav class="my-2 my-md-0 mr-md-3">
 			<a class="p-2 text-dark" href="#">Features</a>
 			<a class="p-2 text-dark" href="#">Enterprise</a>
@@ -135,15 +135,15 @@
 	<script src="./assets/bootstrap.min.js"></script>
 
 	<!-- Loading widget script -->
-	<script src="https://gate.cryptopay.band/widget.js"></script>
+	<script src="https://gate-evolution-cexiopay.dev.kube/js/widget.js"></script>
 
 	<script type="text/javascript">
-		const widgetUrl = "https://gate.cryptopay.band";
+		const widgetUrl = "http://127.0.0.1:38091";
 		const gatewayId = "";
 		const apiUrl = resolveApiUrl();
 
 		if(gatewayId === "") {
-			alert("Error! Please setup your gatewayId.");
+			alert("Error! Please setup your gatewayId in ecommerce.html file.");
 			throw new Error("Cannot continue");
 		}
 
@@ -155,7 +155,7 @@
 
 		// Called after widget closed
 		// Property data.wasConfirmed can be used to findout if payment addres was shown to user.
-		// NOTE: You should check actual status of order using GET /v2/gate/{{gatewayId}}/order/{{orderId}} api.
+		// NOTE: You should check actual status of order using GET /v3/gate/{{gatewayId}}/order/{{orderId}} api.
 		function onLeave(data) {
 			const { orderId, wasConfirmed } = data;
 			console.log("Closing widget for order '" + orderId + "', order was" + (wasConfirmed ? "" : "n't") + " confirmed.");
@@ -191,19 +191,28 @@
 			return data;
 		}
 
+		function getGateBaseUrl() {
+			let targetUrl = widgetUrl;
+			if(!targetUrl.endsWith('/')) {
+				targetUrl += '/';
+			}
+			targetUrl += `v3/${gatewayId}/`;
+			return targetUrl;
+		}
+
 		async function openPaymentPage(currency, amount) {
 			try {
 				const amountStr = amount ? amount : document.querySelector('#deposit-amount').value;
 				const { orderId } = await createOrder(currency, amountStr);
-				let targetUrl = widgetUrl;
-				if(!targetUrl.endsWith('/')) { targetUrl += '/'; }
-				const paymentPageUrl = targetUrl + encodeURI(`${gatewayId}/${orderId}`);
+				const paymentPageUrl = getGateBaseUrl() + encodeURI(orderId);
 				window.open(paymentPageUrl);
 			} catch (e) {
 				alert('Cannot open payment widget. ' + e.message);
 				console.error(e);
 			}
 		}
+
+		const widget = window.CryptoPay.createWidget(getGateBaseUrl(), { onEnter, onLeave });
 
 		async function openPaymentFrame(currency, amount) {
 			try {
@@ -215,9 +224,6 @@
 				console.error(e);
 			}
 		}
-
-		// Creating widget entity and bounding handlers
-		const widget = window.CryptoPay.createWidget(gatewayId, { onEnter, onLeave });
 	</script>
 
 </body>
